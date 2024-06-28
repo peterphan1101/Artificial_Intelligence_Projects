@@ -81,7 +81,7 @@ Langchain_Extract_Financial_Info/
 
 
 ## Scripts:
-    - **generate_cik_yaml.py**:
+   - **generate_cik_yaml.py**:
     Fetches CIK numbers for companies listed in `input_files/companies.csv and saves them to output_files/companies_with_cik.yml`.
 
    - **extract_financial_info.py**:
