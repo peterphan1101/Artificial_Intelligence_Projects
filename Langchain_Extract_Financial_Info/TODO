@@ -1,8 +1,0 @@
-Tools
-- Set up either PostgreSQL or Azure SQL to move the csv finance data into a database
-
-Github Actions
-- Set up team members so everyone can contribute to the project's codebase
-
-Docker
-- Need to update once we add more dataset to the project 
