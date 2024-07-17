@@ -1,0 +1,18 @@
+# Install dependencies:
+numpy
+pandas
+matplotlib
+beautifulsoup4
+lxml
+requests
+pyyaml
+pyarrow
+langchain
+langchain_core
+langchain-community
+langchain_openai
+python-dotenv
+huggingface_hub
+streamlit
+pypdf
+faiss-cpu

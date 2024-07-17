@@ -1,9 +1,0 @@
-# Install dependencies:
-beautifulsoup4
-lxml
-pandas
-requests
-pyyaml
-pyarrow
-
-
