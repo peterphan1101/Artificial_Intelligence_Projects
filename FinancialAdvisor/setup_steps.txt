@@ -1,8 +1,18 @@
-# Step 1: Build the DOcker Image
+# Set up Docker 
+## Step 1: Build the Docker Image
 docker-compose Build
 
-# Step 2: Run Docker Compose
+## Step 2: Run Docker Compose
 docker-compose up
 
-# Step 3: Run Ingestion Script to save data to output_files directory as csv file:
+## Step 3: Run Ingestion Script to save data to output_files directory as csv file:
 docker-compose run app python extract_financial_info.py --yaml_path=/Users/peter/Documents/Projects/Langchain_Extract_Financial_Info/output_files/companies_with_cik.yml --output_csv_path=/Users/peter/Documents/Projects/Langchain_Extract_Financial_Info/output_files/financial_data.csv
+
+
+# Set up MongoDB
+## Step 1: Install the requirements.txt
+pip install -r requirements.txt
+
+## Step 2 Run MongoDB connection
+python MongoDB_connection.py
+

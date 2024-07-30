@@ -14,7 +14,8 @@ def read_yaml(file_path):
 
 # Fetch company financial data from SEC EDGAR API 
 def fetch_financial_data(cik: str, max_retries=3, backoff_factor=0.3) -> dict:
-    url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik.zfill(10)}.json"
+    url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik.zfill(10)}/{report_type}.json"
+
     headers = {
         "User-Agent": "Your Name <your.email@example.com>",
         "Accept-Encoding": "gzip, deflate",
@@ -65,13 +66,14 @@ def main(yml_path, output_csv_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Ingest financial data and save to CSV')
-
     parser.add_argument('--yml_path', required=True, help='Path to the YAML file with CIK codes')
     parser.add_argument('--output_csv_path', required=True, help='Path to save the output CSV file')
+    parser.add_argument('--report_types', nargs='+', default=['10-K', '10-Q', '14A'], help='Types of financial reports to fetch')
+
 
     args = parser.parse_args()
 
-    main(args.yml_path, args.output_csv_path)
+    main(args.yml_path, args.output_csv_path, args.report_types)
 
 # Option 1: run a lean file.
 # Option 2: TO DO list, load the data to PostSQL Database (local)

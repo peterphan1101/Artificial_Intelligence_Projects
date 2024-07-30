@@ -16,3 +16,5 @@ huggingface_hub
 streamlit
 pypdf
 faiss-cpu
+pandas pymongo python-dotenv # MongoDB connetion
+
