@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MONGO_URI=mongodb+srv://peterphan1101:a3kjIzvUl9oo1TUo@cluster0.twctxve.mongodb.net/
+MONGO_URI = "mongodb+srv://peterphan1101:a3kjIzvUl9oo1TUo@cluster0.twctxve.mongodb.net/"
 
 
 MONGO_URI = os.getenv("MONGO_URI")
@@ -18,7 +18,7 @@ db = client['LC_10k_10q_12schedulea_data']
 collection = db['FinancialReports']
 
 # Load data from CSV
-data = pd.read_csv('output_files/financial_info.csv')
+data = pd.read_csv('out/financial_info.csv')
 records = data.to_dict('records')
 
 # Insert data into MongoDB

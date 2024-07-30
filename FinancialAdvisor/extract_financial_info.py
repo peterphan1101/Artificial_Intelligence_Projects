@@ -6,16 +6,13 @@ from requests.exceptions import ConnectionError, Timeout, RequestException
 import os
 import argparse
 
-# Read YML file
 def read_yaml(file_path):
     with open(file_path, 'r') as file:
         data = yaml.safe_load(file)
     return data['companies']
 
-# Fetch company financial data from SEC EDGAR API 
 def fetch_financial_data(cik: str, max_retries=3, backoff_factor=0.3) -> dict:
-    url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik.zfill(10)}/{report_type}.json"
-
+    url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik.zfill(10)}.json"
     headers = {
         "User-Agent": "Your Name <your.email@example.com>",
         "Accept-Encoding": "gzip, deflate",
@@ -24,18 +21,17 @@ def fetch_financial_data(cik: str, max_retries=3, backoff_factor=0.3) -> dict:
     for attempt in range(max_retries):
         try:
             response = requests.get(url, headers=headers, timeout=10)
-            response.raise_for_status()  # Raise an error for bad status codes
+            response.raise_for_status()
             return response.json()
         except (ConnectionError, Timeout) as e:
             print(f"Attempt {attempt + 1} failed: {e}")
-            time.sleep(backoff_factor * (2 ** attempt))  # Exponential backoff
+            time.sleep(backoff_factor * (2 ** attempt))
         except RequestException as e:
             print(f"Request failed: {e}")
             return None
     print(f"Failed to fetch data for CIK {cik} after {max_retries} attempts")
     return None
 
-# Extract and clean financial information
 def extract_financial_info(filings):
     if filings:
         financial_data = {
@@ -46,7 +42,19 @@ def extract_financial_info(filings):
         return financial_data
     return None
 
-# Main workflow
+def parse_financial_data(financials):
+    data = []
+    for report_type, reports in financials.items():
+        for report in reports.values():
+            for instance in report['units'].values():
+                for record in instance:
+                    data.append({
+                        'report_type': report_type,
+                        'date': record.get('end', 'N/A'),
+                        'value': record.get('val', 'N/A')
+                    })
+    return data
+
 def main(yml_path, output_csv_path):
     companies = read_yaml(yml_path)
     all_data = []
@@ -57,10 +65,16 @@ def main(yml_path, output_csv_path):
         if filings:
             financial_info = extract_financial_info(filings)
             if financial_info:
-                all_data.append(financial_info)
+                parsed_data = parse_financial_data(financial_info['financials'])
+                for data in parsed_data:
+                    data.update({
+                        'cik': financial_info['cik'],
+                        'company_name': financial_info['company_name']
+                    })
+                    all_data.append(data)
 
-    # Convert to DataFrame 
     df = pd.DataFrame(all_data)
+    os.makedirs(os.path.dirname(output_csv_path), exist_ok=True)
     df.to_csv(output_csv_path, index=False)
     print(f"Financial data saved to {output_csv_path}")
 
@@ -68,12 +82,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Ingest financial data and save to CSV')
     parser.add_argument('--yml_path', required=True, help='Path to the YAML file with CIK codes')
     parser.add_argument('--output_csv_path', required=True, help='Path to save the output CSV file')
-    parser.add_argument('--report_types', nargs='+', default=['10-K', '10-Q', '14A'], help='Types of financial reports to fetch')
-
 
     args = parser.parse_args()
 
-    main(args.yml_path, args.output_csv_path, args.report_types)
-
-# Option 1: run a lean file.
-# Option 2: TO DO list, load the data to PostSQL Database (local)
+    main(args.yml_path, args.output_csv_path)

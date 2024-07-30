@@ -56,8 +56,8 @@ def read_companies_from_csv(csv_file):
     df = pd.read_csv(csv_file)
     return df['name'].tolist()
 
-csv_file = 'input_files/companies.csv'
-output_file = 'output_files/companies_with_cik.yml'
+csv_file = 'in/companies.csv'
+output_file = 'out/companies_with_cik.yml'
 
 companies = read_companies_from_csv(csv_file)
 create_cik_yaml(companies, output_file)

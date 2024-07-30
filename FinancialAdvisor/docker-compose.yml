@@ -1,11 +1,10 @@
-
 version: '3.8'
 services:
   app:
     build: .
     volumes:
-      - ./input_files:/app/input_files
-      - ./output_files:/app/output_files
+      - ./in:/app/in
+      - ./out:/app/out
     environment:
       - PYTHONUNBUFFERED=1
-    command: sh -c "python generate_cik_yml.py && python extract_financial_info.py --yml_path=output_files/companies_with_cik.yml --output_csv_path=output_files/financial_info.csv"
+    command: sh -c "python generate_cik_yml.py && python extract_financial_info.py --yml_path=out/companies_with_cik.yml --output_csv_path=out/financial_info.csv"
