@@ -27,72 +27,67 @@ load_dotenv()
 openai_api_key = os.environ['OPENAI_API_KEY']
 serpapi_api_key = os.environ['SERPAPI_API_KEY']
 
-st.set_page_config(page_title="Financial Advisor", page_icon="$€₹")
-st.header('Welcome to Personal Financial Advisor!')
+def query(question, chat_history):
 
-search = SerpAPIWrapper()
-
-text_splitter = RecursiveCharacterTextSplitter(
+    text_splitter = RecursiveCharacterTextSplitter(
     chunk_size = 1500,
     chunk_overlap=200
-)
-
-appl_10k = PyPDFLoader('APPL_0000320193.pdf').load()
-appl_fin_data = text_splitter.split_documents(appl_10k)
-
-fin_documents = text_splitter.split_documents(appl_fin_data)
-db = FAISS.from_documents(fin_documents, OpenAIEmbeddings())
-
-memory = ConversationBufferMemory(
-    return_messages=True, 
-    memory_key="chat_history", 
-    output_key="output"
-)
-
-llm = ChatOpenAI()
-tools = [
-    Tool.from_function(
-        func=search.run,
-        name="Search",
-        description="useful for when you need to answer questions about current events"
-    ),
-    create_retriever_tool(
-        db.as_retriever(), 
-        # "italy_travel",
-        "financial_data",
-        "Searches and returns financial documents"
     )
-    ]
 
-agent = create_conversational_retrieval_agent(llm, tools, memory_key='chat_history', verbose=True)
+    appl_10k = PyPDFLoader('APPL_0000320193.pdf').load()
+    appl_fin_data = text_splitter.split_documents(appl_10k)
 
-user_query = st.text_input(
-    "**How can I help you with financial information?**",
-    placeholder="Ask me anything!"
-)
+    fin_documents = text_splitter.split_documents(appl_fin_data)
+    new_db = FAISS.from_documents(fin_documents, OpenAIEmbeddings())
 
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you with financial information?"}]
-if "memory" not in st.session_state:
-    st.session_state['memory'] = memory
+    memory = ConversationBufferMemory(
+        return_messages=True, 
+        memory_key="chat_history", 
+        output_key="output"
+    )
+
+    llm = ChatOpenAI(temperature=0)
+
+    query = ConversationalRetrievalChain.from_llm(
+        llm=llm, 
+        retriever=new_db.as_retriever(), 
+        return_source_documents=True)
+    return query({"question": question, "chat_history": chat_history})
 
 
-for msg in st.session_state["messages"]:
-    st.chat_message(msg["role"]).write(msg["content"])
+def show_ux():
+    
+    st.set_page_config(page_title="Financial Advisor", page_icon="$€₹")
+    st.title("Welcome to Personal Financial Advisor!")    
+    st.subheader("Ask me anything about financials")
 
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+        st.session_state.chat_history = []
 
-def display_msg(msg, author):
+    # Display chat messages from history on app rerun
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-    st.session_state.messages.append({"role": author, "content": msg})
-    st.chat_message(author).write(msg)
+    # Accept user input
+    if prompt := st.chat_input("Enter your query: "):
+        with st.spinner("Working on your query...."):     
+            response = query(question=prompt, chat_history=st.session_state.chat_history)            
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            with st.chat_message("assistant"):
+                st.markdown(response["answer"])    
 
-if user_query:
-    display_msg(user_query, 'user')
-    with st.chat_message("assistant"):
-        st_cb = StreamlitCallbackHandler(st.container())
-        response = agent(user_query, callbacks=[st_cb])
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        st.write(response)
+            # Append user message to chat history
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            st.session_state.messages.append({"role": "assistant", "content": response["answer"]})
+            st.session_state.chat_history.extend([(prompt, response["answer"])])
+    
+    if st.sidebar.button("Reset chat history"):
+        st.session_state.messages = []
 
-if st.sidebar.button("Reset chat history"):
-    st.session_state.messages = []
+# Main program
+if __name__ == "__main__":
+    show_ux() 
+    
