@@ -22,6 +22,10 @@ from langchain_openai.llms.base import OpenAI
 from langchain_openai.chat_models.base import ChatOpenAI
 from langchain_openai.embeddings.base import OpenAIEmbeddings
 
+## Credit : Coding patterns are inspired from below Oreilly's LLM course and book examples:
+## Gen AI - RAG Application Development using LangChain By Manas Dasgupta
+## Building LLM Powered Applications By Valentina Alto
+
 load_dotenv()
 
 openai_api_key = os.environ['OPENAI_API_KEY']
