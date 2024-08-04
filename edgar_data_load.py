@@ -22,7 +22,8 @@ def get_edgar_filings(ticker :str):
 def upload_to_mongo(filings):
     mongo_client = MongoClient(MONGO_URI)
     mongo_db = mongo_client['llm_mongo_db']
-    mongo_collection = mongo_db['FinDocs']
+    # mongo_collection = mongo_db['FinDocs']
+    mongo_collection = mongo_db['FinDocs_text']
     fin_docs = []
     for _filing in filings:
         _doc = {
@@ -31,7 +32,7 @@ def upload_to_mongo(filings):
             "form": _filing.form,
             "filing_date": _filing.filing_date.isoformat(), 
             "accession_no": _filing.accession_no,
-            "financial_doc": _filing.html()
+            "financial_doc": _filing.text()
             }
         fin_docs.append(_doc)
     mongo_collection.insert_many(fin_docs)
