@@ -82,7 +82,7 @@ def initialize_load_samples():
 def main_ux():
 
     st.set_page_config(page_title="Financial Advisor", page_icon="$€₹")
-    st.title("Welcome to Personal Financial Advisor!")    
+    st.title("Welcome to Financial Advisor!")    
     st.subheader("Ask me anything about financials")
 
     if "messages" not in st.session_state:
@@ -114,6 +114,7 @@ def main_ux():
     
     if st.sidebar.button("Reset chat history"):
         st.session_state.messages = []
+        st.session_state.chat_history = []
 
     if st.sidebar.button("Load Sample Data"):
         with st.sidebar:
