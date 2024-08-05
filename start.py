@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 import streamlit as st
+import faiss
 
 from langchain.prompts import PromptTemplate
 from langchain.chains.llm import LLMChain
@@ -21,6 +22,11 @@ from langchain_community.chat_message_histories import StreamlitChatMessageHisto
 from langchain_openai.llms.base import OpenAI
 from langchain_openai.chat_models.base import ChatOpenAI
 from langchain_openai.embeddings.base import OpenAIEmbeddings
+from langchain_community.vectorstores.utils import DistanceStrategy
+from langchain_community.docstore.in_memory import InMemoryDocstore
+from load_companies import load_companies_to_mongo, load_companies_to_vectdb, read_sample_companies
+
+from pymongo import MongoClient
 
 ## Credit : Coding patterns are inspired from below Oreilly's LLM course and book examples:
 ## Gen AI - RAG Application Development using LangChain By Manas Dasgupta
@@ -28,39 +34,51 @@ from langchain_openai.embeddings.base import OpenAIEmbeddings
 
 load_dotenv()
 
+MONGO_URI = os.getenv("MONGO_URI")
+if not MONGO_URI:
+    raise Exception("MongoDB connection string not found in environment variables.")
+
 openai_api_key = os.environ['OPENAI_API_KEY']
 serpapi_api_key = os.environ['SERPAPI_API_KEY']
+samples_file = "sample_companies.yml"
 
 def query(question, chat_history):
 
-    text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size = 1500,
-    chunk_overlap=200
-    )
+    global llm
+    global vector_db
+    global mongo_client
 
-    appl_10k = PyPDFLoader('APPL_0000320193.pdf').load()
-    appl_fin_data = text_splitter.split_documents(appl_10k)
-
-    fin_documents = text_splitter.split_documents(appl_fin_data)
-    new_db = FAISS.from_documents(fin_documents, OpenAIEmbeddings())
-
+    if "is_initialized" not in st.session_state:
+        llm = ChatOpenAI(temperature=0)
+        embd_func = OpenAIEmbeddings()
+        embd_dimension = 1536  # model = "text-embedding-ada-002"
+        docstore = InMemoryDocstore()
+        vector_db = FAISS(embedding_function=embd_func, index=faiss.IndexFlatL2(embd_dimension),docstore=docstore, index_to_docstore_id={}, relevance_score_fn=None, normalize_L2=False, distance_strategy=DistanceStrategy.EUCLIDEAN_DISTANCE)
+        mongo_client = MongoClient(MONGO_URI)
+        mongo_db = mongo_client['llm_mongo_db']
+        sample_companies = read_sample_companies(samples_file)
+        load_companies_to_mongo(sample_companies, mongo_db)
+        load_companies_to_vectdb(sample_companies, mongo_db, vector_db)
+        st.session_state.vector_db = vector_db
+        st.session_state.llm = llm
+        st.session_state.mongo_db = mongo_db
+        st.session_state.is_initialized = "True"
+    
     memory = ConversationBufferMemory(
         return_messages=True, 
         memory_key="chat_history", 
         output_key="output"
     )
-
-    llm = ChatOpenAI(temperature=0)
-
-    query = ConversationalRetrievalChain.from_llm(
-        llm=llm, 
-        retriever=new_db.as_retriever(), 
+    vector_db_st = st.session_state.vector_db
+    c_query = ConversationalRetrievalChain.from_llm(
+        llm = st.session_state.llm,
+        retriever=vector_db_st.as_retriever(), 
         return_source_documents=True)
-    return query({"question": question, "chat_history": chat_history})
-
-
-def show_ux():
     
+    return c_query({"question": question, "chat_history": chat_history})
+
+def main_ux():
+
     st.set_page_config(page_title="Financial Advisor", page_icon="$€₹")
     st.title("Welcome to Personal Financial Advisor!")    
     st.subheader("Ask me anything about financials")
@@ -69,14 +87,13 @@ def show_ux():
         st.session_state.messages = []
         st.session_state.chat_history = []
 
-    # Display chat messages from history on app rerun
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
     # Accept user input
     if prompt := st.chat_input("Enter your query: "):
-        with st.spinner("Working on your query...."):     
+        with st.spinner("Working on your query...."):
             response = query(question=prompt, chat_history=st.session_state.chat_history)            
             with st.chat_message("user"):
                 st.markdown(prompt)
@@ -93,5 +110,5 @@ def show_ux():
 
 # Main program
 if __name__ == "__main__":
-    show_ux() 
+    main_ux() 
     

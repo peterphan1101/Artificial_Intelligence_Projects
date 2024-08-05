@@ -26,26 +26,17 @@ class StringLoader(BaseLoader):
     def load(self):
         return [Document(page_content=self.string_content)]
     
-def load_to_vectdb(company_cik, vector_db=None):
-
+def load_to_vectdb(company_cik, mongo_db, vector_db):
     text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size = 1500,
-    chunk_overlap=200
+        chunk_size = 1500,
+        chunk_overlap=200
     )
-
-    mongo_client = MongoClient(MONGO_URI)
-    mongo_db = mongo_client['llm_mongo_db']
     mongo_collection = mongo_db['FinDocs_text']
-    fin_docs = mongo_collection.find({'cik':company_cik})
-    embd_func = OpenAIEmbeddings()
-    embd_dimension = 1536  # model = "text-embedding-ada-002"
-    docstore = InMemoryDocstore()
-    if vector_db == None:
-        vector_db = FAISS(embedding_function=embd_func, index=faiss.IndexFlatL2(embd_dimension),docstore=docstore, index_to_docstore_id={}, relevance_score_fn=None, normalize_L2=False, distance_strategy=DistanceStrategy.EUCLIDEAN_DISTANCE)
-    if fin_docs:
-        for _doc in fin_docs:
-            fin_doc = _doc["financial_doc"]
-            fin_txt_doc = StringLoader(fin_doc).load()
-            fin_txt_data = text_splitter.split_documents(fin_txt_doc)
-            vector_db.add_documents(fin_txt_data)
-    return vector_db   
+    company_cik = int(company_cik)
+    financial_docs = mongo_collection.find({"cik":company_cik})
+    for _fin_doc in financial_docs:
+        fin_doc_content = _fin_doc["financial_doc"]
+        fin_txt_doc = StringLoader(fin_doc_content).load()
+        fin_txt_data = text_splitter.split_documents(fin_txt_doc)
+        vector_db.add_documents(fin_txt_data)
+    return vector_db

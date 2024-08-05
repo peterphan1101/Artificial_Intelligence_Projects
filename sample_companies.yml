@@ -1,0 +1,9 @@
+companies:
+- cik: 0000320193
+  name: Apple Inc.
+- cik: 0000789019
+  name: Microsoft Corp
+- cik: 0001318605
+  name: 'Tesla Motors Inc '
+- cik: 0001045810
+  name: 'Nvidia Corp' 

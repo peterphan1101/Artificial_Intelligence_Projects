@@ -14,14 +14,14 @@ MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
     raise Exception("MongoDB connection string not found in environment variables.")
 
-def get_edgar_filings(ticker :str):
-    _num_filings = 12
-    _filings = Company(ticker).get_filings(form=["10-K", "10-Q"]).latest(_num_filings)
+def get_edgar_filings(ticker_or_cik :str):
+    _num_filings = 2
+    _filings = Company(ticker_or_cik).get_filings(form=["10-K", "10-Q"]).latest(_num_filings)
     return _filings
 
-def upload_to_mongo(filings):
-    mongo_client = MongoClient(MONGO_URI)
-    mongo_db = mongo_client['llm_mongo_db']
+def upload_to_mongo(filings, mongo_db):
+    # mongo_client = MongoClient(MONGO_URI)
+    # mongo_db = mongo_client['llm_mongo_db']
     # mongo_collection = mongo_db['FinDocs']
     mongo_collection = mongo_db['FinDocs_text']
     fin_docs = []
@@ -34,14 +34,17 @@ def upload_to_mongo(filings):
             "accession_no": _filing.accession_no,
             "financial_doc": _filing.text()
             }
+        # print(f"Inside upload_to_mongo. _doc : {_doc}")
         fin_docs.append(_doc)
     mongo_collection.insert_many(fin_docs)
-    print("Data uploaded successfully!")
+    # print(f"Data uploaded successfully! for filings : {filings}")
 
 def main(company_ticker):
     print(company_ticker)
     _filings = get_edgar_filings(company_ticker)
-    upload_to_mongo(_filings)
+    mongo_client = MongoClient(MONGO_URI)
+    mongo_db = mongo_client['llm_mongo_db']
+    upload_to_mongo(_filings, mongo_db)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Fetch data from SEC Edgar API and load the documents to MongoDB')
