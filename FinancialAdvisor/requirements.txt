@@ -20,4 +20,3 @@ pymongo
 # sec_filing_parser # For sec parsing
 python-dotenv # MongoDB connetion
 edgartools
-

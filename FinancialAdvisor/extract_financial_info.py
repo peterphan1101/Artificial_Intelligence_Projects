@@ -14,7 +14,7 @@ def read_yaml(file_path):
 def fetch_financial_data(cik: str, max_retries=3, backoff_factor=0.3) -> dict:
     url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik.zfill(10)}.json"
     headers = {
-        "User-Agent": "Your Name <your.email@example.com>",
+        "User-Agent": "Financial Advisor using LLM",
         "Accept-Encoding": "gzip, deflate",
         "Host": "data.sec.gov"
     }
