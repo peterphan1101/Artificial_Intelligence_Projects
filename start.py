@@ -93,7 +93,10 @@ def main_ux():
 
     # Accept user input
     if prompt := st.chat_input("Enter your query: "):
-        with st.spinner("Working on your query...."):
+        msg = "Working on your query...."
+        if "is_initialized" not in st.session_state:
+            msg = "Initializing sample financial data for APPL, MSFT and TSLA. This will take few seconds. " + msg
+        with st.spinner(msg):
             response = query(question=prompt, chat_history=st.session_state.chat_history)            
             with st.chat_message("user"):
                 st.markdown(prompt)

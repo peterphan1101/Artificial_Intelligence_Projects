@@ -15,7 +15,7 @@ if not MONGO_URI:
     raise Exception("MongoDB connection string not found in environment variables.")
 
 def get_edgar_filings(ticker_or_cik :str):
-    _num_filings = 12  # last 3 years
+    _num_filings = 4  # last 1 year
     _filings = Company(ticker_or_cik).get_filings(form=["10-K", "10-Q"]).latest(_num_filings)
     return _filings
 
