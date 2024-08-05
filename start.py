@@ -42,28 +42,7 @@ openai_api_key = os.environ['OPENAI_API_KEY']
 serpapi_api_key = os.environ['SERPAPI_API_KEY']
 samples_file = "sample_companies.yml"
 
-def query(question, chat_history):
-
-    global llm
-    global vector_db
-    global mongo_client
-
-    if "is_initialized" not in st.session_state:
-        llm = ChatOpenAI(temperature=0)
-        embd_func = OpenAIEmbeddings()
-        embd_dimension = 1536  # model = "text-embedding-ada-002"
-        docstore = InMemoryDocstore()
-        vector_db = FAISS(embedding_function=embd_func, index=faiss.IndexFlatL2(embd_dimension),docstore=docstore, index_to_docstore_id={}, relevance_score_fn=None, normalize_L2=False, distance_strategy=DistanceStrategy.EUCLIDEAN_DISTANCE)
-        mongo_client = MongoClient(MONGO_URI)
-        mongo_db = mongo_client['llm_mongo_db']
-        sample_companies = read_sample_companies(samples_file)
-        load_companies_to_mongo(sample_companies, mongo_db)
-        load_companies_to_vectdb(sample_companies, mongo_db, vector_db)
-        st.session_state.vector_db = vector_db
-        st.session_state.llm = llm
-        st.session_state.mongo_db = mongo_db
-        st.session_state.is_initialized = "True"
-    
+def query(question, chat_history):   
     memory = ConversationBufferMemory(
         return_messages=True, 
         memory_key="chat_history", 
@@ -76,6 +55,29 @@ def query(question, chat_history):
         return_source_documents=True)
     
     return c_query({"question": question, "chat_history": chat_history})
+
+def initialize_load_samples():
+    global llm
+    global vector_db
+    global mongo_client
+
+    if "is_initialized" not in st.session_state:
+        llm = ChatOpenAI(temperature=0)
+        embd_func = OpenAIEmbeddings()
+        embd_dimension = 1536  # model = "text-embedding-ada-002"
+        docstore = InMemoryDocstore()
+        vector_db = FAISS(embedding_function=embd_func, index=faiss.IndexFlatL2(embd_dimension),docstore=docstore, index_to_docstore_id={}, relevance_score_fn=None, normalize_L2=False, distance_strategy=DistanceStrategy.EUCLIDEAN_DISTANCE)
+        mongo_client = MongoClient(MONGO_URI)
+        mongo_db = mongo_client['llm_mongo_db']
+        mongo_collection = mongo_db['FinDocs_text']
+        mongo_collection.drop()
+        sample_companies = read_sample_companies(samples_file)
+        load_companies_to_mongo(sample_companies, mongo_db)
+        load_companies_to_vectdb(sample_companies, mongo_db, vector_db)
+        st.session_state.vector_db = vector_db
+        st.session_state.llm = llm
+        st.session_state.mongo_db = mongo_db
+        st.session_state.is_initialized = "True"
 
 def main_ux():
 
@@ -95,8 +97,10 @@ def main_ux():
     if prompt := st.chat_input("Enter your query: "):
         msg = "Working on your query...."
         if "is_initialized" not in st.session_state:
-            msg = "Initializing sample financial data for APPL, MSFT and TSLA. This will take few seconds. " + msg
+            msg = "Initializing sample financial data for APPL, MSFT and TSLA. This will take couple of minutes. " + msg
         with st.spinner(msg):
+            if "is_initialized" not in st.session_state:
+                initialize_load_samples()
             response = query(question=prompt, chat_history=st.session_state.chat_history)            
             with st.chat_message("user"):
                 st.markdown(prompt)
@@ -110,6 +114,15 @@ def main_ux():
     
     if st.sidebar.button("Reset chat history"):
         st.session_state.messages = []
+
+    if st.sidebar.button("Load Sample Data"):
+        with st.sidebar:
+            if "is_initialized" not in st.session_state:
+                with st.spinner("Loading Sample Data..."):
+                    initialize_load_samples()
+                st.success("Sample Data Loaded!")
+            else:
+                st.success("Samples Data already loaded!")
 
 # Main program
 if __name__ == "__main__":
