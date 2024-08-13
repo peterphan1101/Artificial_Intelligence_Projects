@@ -172,7 +172,7 @@ SERPAPI_API_KEY=your_serpapi_api_key
 
 ## Contributing
 
-Contributions are welcome! Please read the [CONTRIBUTING](notion://www.notion.so/CONTRIBUTING.md) guidelines before submitting a pull request.
+Contributions are welcome!
 
 ## License
 
