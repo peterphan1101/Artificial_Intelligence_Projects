@@ -136,14 +136,17 @@ streamlit run scripts/start.py
 ## Project Structure
 
 personal_finance_with_LLM/
-│
 ├── data/
+│
+│
 │   ├── APPL_0000320193.pdf
 │   ├── financial_info.csv
 │   ├── sample_companies.yml
 │   └── output_files/
 │
+│
 ├── scripts/
+│   │
 │   ├── debug_start.py
 │   ├── edgar_data_load.py
 │   ├── extract_macroeconomic_data.py
@@ -151,6 +154,7 @@ personal_finance_with_LLM/
 │   ├── load_to_vectdb.py
 │   ├── start.py
 │   └── __init__.py
+│
 │
 ├── .env
 ├── .gitignore
