@@ -58,7 +58,6 @@ tools = [
     ),
     create_retriever_tool(
         db.as_retriever(), 
-        # "italy_travel",
         "financial_data",
         "Searches and returns financial documents"
     )

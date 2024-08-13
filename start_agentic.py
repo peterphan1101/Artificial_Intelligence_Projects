@@ -1,18 +1,24 @@
 import os
+from dotenv import load_dotenv
 import streamlit as st
 import faiss
-from dotenv import load_dotenv
 from pymongo import MongoClient
 
 from langchain.memory import ConversationBufferMemory
 from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
-from langchain.tools import BaseTool, Tool, tool
+from langchain.agents.agent_toolkits import create_retriever_tool
+from langchain.agents.agent_toolkits.conversational_retrieval.openai_functions import create_conversational_retrieval_agent
+from langchain_core.tools import BaseTool, Tool, tool, StructuredTool
+
 from langchain_openai.llms.base import OpenAI
 from langchain_openai.chat_models.base import ChatOpenAI
 from langchain_openai.embeddings.base import OpenAIEmbeddings
+
 from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_community.utilities import SerpAPIWrapper
+from langchain_community.agent_toolkits.load_tools import load_tools
 
 from load_companies import load_companies_to_mongo, load_companies_to_vectdb, read_sample_companies
 
@@ -25,20 +31,20 @@ load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
-    raise Exception("ERROR: MongoDB connection string is not found as environment variables in .env file.")
+    raise Exception("MongoDB connection string not found in environment variables.")
+
 openai_api_key = os.environ['OPENAI_API_KEY']
 serpapi_api_key = os.environ['SERPAPI_API_KEY']
 
 # Sample companies with company names and Central Index Key (CIK), a unique number assigned by the U.S. Securities and Exchange Commission (SEC)
 # These companies 10-Q and 10-K data from SEC API is loaded on first question to AI bot or as part of Load Sample Data button.
 # The data from these sample companies is then used to demonstrate the Retrieval Augmented Generation (RAG) functionality of the Financial Advisor application.
-
 samples_file = "sample_companies.yml"
 
-def query(question: str, chat_history: list):
+def query(question, chat_history):
     """
-    query method uses ConversationBufferMemory and ConversationalRetrievalChain with OpenAI LLM and Vector DB retriever to generate the answers for user
-    queries and saves the context to memory.
+    query method uses ConversationBufferMemory and conversational_retrieval_agent with OpenAI LLM and Vector DB retriever to generate the answers for user
+    queries and saves the context to memory.conversational_retrieval_agent can also retrieve current information from google search using SerpApi.
     
     Parameters:
     question (str): Human/user question to AI Bot.
@@ -46,19 +52,20 @@ def query(question: str, chat_history: list):
     
     Returns:
     Dict[str, Any]: dictionary of tuples including question, answer, chat history and documents retrieved etc.,
-    """   
+    """
+    tools = st.session_state.tools
+ 
     memory = ConversationBufferMemory(
-        return_messages=True, 
-        memory_key="chat_history", 
-        output_key="output"
+    return_messages=True, 
+    memory_key="chat_history", 
+    output_key="output"
     )
-    vector_db_st = st.session_state.vector_db
-    c_query = ConversationalRetrievalChain.from_llm(
-        llm = st.session_state.llm,
-        retriever=vector_db_st.as_retriever(), 
-        return_source_documents=True)
-    
-    return c_query({"question": question, "chat_history": chat_history})
+    agent_executor = create_conversational_retrieval_agent(llm = st.session_state.llm, tools=tools, memory_key='chat_history', verbose=True)   
+    # agent_response = agent_executor.invoke({"input": question, "chat_history": chat_history})
+    agent_response = agent_executor.invoke({"input": question})
+    print(f"agent_response : {agent_response}")
+    return agent_response
+
 
 def initialize_load_samples():
     """
@@ -76,6 +83,7 @@ def initialize_load_samples():
     global llm
     global vector_db
     global mongo_client
+    global tools
 
     if "is_initialized" not in st.session_state:
         llm = ChatOpenAI(temperature=0)
@@ -90,9 +98,25 @@ def initialize_load_samples():
         sample_companies = read_sample_companies(samples_file)
         load_companies_to_mongo(sample_companies, mongo_db)
         load_companies_to_vectdb(sample_companies, mongo_db, vector_db)
+
+        search = SerpAPIWrapper()
+        # tools = [StructuredTool.from_function(
+        tools = [Tool.from_function(            
+            func=search.run,
+            name="Search",
+            description="useful for when you need to answer questions about current events"
+        )]
+
+        vdb_tool = create_retriever_tool(
+            vector_db.as_retriever(),
+            name="financials",
+            description="Searches and returns financial data"
+        )
+        tools.append(vdb_tool)
         st.session_state.vector_db = vector_db
         st.session_state.llm = llm
         st.session_state.mongo_db = mongo_db
+        st.session_state.tools = tools
         st.session_state.is_initialized = "True"
 
 def main_ux():
@@ -105,11 +129,11 @@ def main_ux():
     
     Returns:
     None
-    """    
+    """ 
     st.set_page_config(page_title="Financial Advisor", page_icon="$€₹")
     st.title("Welcome to Financial Advisor!")    
     st.subheader("Ask me anything about financials")
-
+    
     # Initialize session state for messages and chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -127,18 +151,17 @@ def main_ux():
             msg = "Initializing sample financial data for APPL, MSFT and TSLA. This will take couple of minutes. " + msg
         with st.spinner(msg):
             if "is_initialized" not in st.session_state:
-                initialize_load_samples()       # Initialize and load sample data.
-            response = query(question=prompt, chat_history=st.session_state.chat_history) 
-            print(f"response Dict[str, Any] : {response}")            
+                initialize_load_samples()
+            response = query(question=prompt, chat_history=str(st.session_state.chat_history))            
             with st.chat_message("user"):
                 st.markdown(prompt)
             with st.chat_message("assistant"):
-                st.markdown(response["answer"])    
+                st.markdown(str(response["output"]))    
 
             # Append user message to chat history
             st.session_state.messages.append({"role": "user", "content": prompt})
-            st.session_state.messages.append({"role": "assistant", "content": response["answer"]})
-            st.session_state.chat_history.extend([(prompt, response["answer"])])
+            st.session_state.messages.append({"role": "assistant", "content": response["output"]})
+            st.session_state.chat_history.extend([(prompt, response["output"])])
     
     # Side bar button to reset chat session.
     if st.sidebar.button("Reset chat history"):
@@ -157,4 +180,5 @@ def main_ux():
 
 # Main program
 if __name__ == "__main__":
-    main_ux()
+    main_ux() 
+    
