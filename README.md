@@ -1,103 +1,179 @@
 # Langchain Extract Financial Info
 
-## Overview
+A streamlined financial agent using LangChain, FAISS, and MongoDB to analyze and retrieve data from the SEC Edgar database.
 
-This project streamlines the process of extracting financial information for companies from the SEC EDGAR database. The extraction is carried out using Python scripts, which can be run either locally or within Docker containers. The financial data gathered is then stored in CSV files for subsequent analysis.
+## Table of Contents
+
+- [Langchain Extract Financial Info](#langchain-extract-financial-info)
+  - [Introduction](#introduction)
+  - [Features](#features)
+  - [Installation](#installation)
+  - [MongoDB Setup](#mongodb-setup)
+  - [Debugging MongoDB Connection](#debugging-mongodb-connection)
+  - [Usage](#usage)
+  - [Project Structure](#project-structure)
+  - [Environment Variables](#environment-variables)
+  - [Contributing](#contributing)
+  - [License](#license)
+
+## Introduction
+
+The Langchain Extract Financial Info project helps users retrieve and analyze financial documents from the SEC Edgar database. It combines modern machine learning techniques and traditional data retrieval methods to provide insightful information on various companies.
+
+## Features
+
+- Retrieve financial documents (10-K, 10-Q) from the SEC Edgar database.
+- Store and manage financial data using MongoDB.
+- Utilize FAISS for efficient vector search.
+- Interactive Streamlit interface for querying financial data.
+
+## Installation
+
+To get started with the Financial Agent project, follow these steps:
+
+1. Clone the repository:
+    
+    ```
+    git clone [<https://github.com/your-username/financial-agent.git>](https://github.com/peterphan1101/Artificial_Intelligence_Projects)
+
+    ```
+    
+2. Install the required Python packages:
+    
+    ```
+    pip install -r requirements.txt
+
+    ```
+    
+
+## MongoDB Setup
+
+To set up MongoDB for this project, follow these instructions:
+
+1. **Install Docker Desktop** (if not already installed):
+    - Download and install Docker Desktop from the official Docker website.
+2. **Pull MongoDB Docker Image**:
+    
+    ```
+    docker pull mongo
+    ```
+    
+3. **Run MongoDB Container**:
+    
+    ```
+    docker run --restart=unless-stopped --name llm_mongo -p 27017:27017 -v /workspace/mongo:/workspace/mongo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=ORCA1at3orca mongo
+
+    ```
+    
+4. **Access MongoDB Shell**:
+    
+    ```
+    docker exec -it llm_mongo mongosh -u mongoadmin -p ORCA1at3orca --authenticationDatabase admin llm_mongo_db
+    
+    ```
+    
+5. **Start MongoDB Container**:
+    
+    ```
+    docker start -i llm_mongo
+
+    ```
+    
+
+## Debugging MongoDB Connection
+
+If you encounter issues connecting to MongoDB, follow these steps to debug:
+
+1. **Check MongoDB Service**:
+Ensure that the MongoDB service is running. You can check this using Docker commands:
+    
+    ```
+    docker ps -a
+    docker start llm_mongo
+
+    ```
+    
+2. **Verify Connection String**:
+Make sure the `MONGO_URI` in your `.env` file is correct. It should follow this format:
+    
+    ```
+    MONGO_URI=mongodb://mongoadmin:ORCA1at3orca@localhost:27017/llm_mongo_db
+
+    ```
+    
+3. **Access MongoDB Shell**:
+Try accessing the MongoDB shell to verify credentials:
+    
+    ```
+    docker exec -it llm_mongo mongosh -u mongoadmin -p ORCA1at3orca --authenticationDatabase admin llm_mongo_db
+
+    ```
+    
+4. **Check Network Issues**:
+Ensure there are no network issues preventing access to MongoDB. If you are running the application in a different environment, make sure the MongoDB server is accessible from that environment.
+
+
+5. **Review Logs**:
+Check the logs for any error messages:
+    
+    ```
+    docker logs llm_mongo
+
+    ```
+    
+6. **Ensure Correct Port Mapping**:
+Verify that the correct ports are mapped. The default port for MongoDB is 27017. Ensure that this port is not blocked by your firewall or other security settings.
+
+## Usage
+
+To run the Financial Agent application, execute the following command:
+
+```
+streamlit run scripts/start.py
+
+```
 
 ## Project Structure
-```
-FinancialAdvisor/
-├── in/
-│   └── companies.csv
-├── out/
-│   └── companies_with_cik.yml
-│   └── financial_data.csv
-├── system_design/
-├── companies_input.yml
-├── docker-compose.yml
-├── Dockerfile
-├── extract_financial_info.py
-├── generate_cik_yaml.py
-├── MongoDB_connection.py
+
+personal_finance_with_LLM/
+│
+├── data/
+│   ├── APPL_0000320193.pdf
+│   ├── financial_info.csv
+│   ├── sample_companies.yml
+│   └── output_files/
+│
+├── scripts/
+│   ├── debug_start.py
+│   ├── edgar_data_load.py
+│   ├── extract_macroeconomic_data.py
+│   ├── load_companies.py
+│   ├── load_to_vectdb.py
+│   ├── start.py
+│   └── __init__.py
+│
+├── .env
+├── .gitignore
+├── LICENSE
 ├── README.md
-├── requirements.txt
-├── setup_steps.txt
-├── testing_api_edgar.ipynb
-README.md
-start.py
-extract_macroeconomic_data.py
-LICENSE
+└── requirements.txt
+
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following content:
+
+```
+MONGO_URI="mongodb://mongoadmin:ORCA1at3orca@localhost/" 
+OPENAI_API_KEY=your_openai_api_key
+SERPAPI_API_KEY=your_serpapi_api_key
+
 ```
 
+## Contributing
 
-## Prerequisites
+Contributions are welcome! Please read the [CONTRIBUTING](notion://www.notion.so/CONTRIBUTING.md) guidelines before submitting a pull request.
 
-- Python 3.11
-- Docker and Docker Compose
+## License
 
-## Setup
-
-### Local Setup
-
-1. **Clone the Repository**:
-   ```sh
-   git clone https://github.com/yourusername/Langchain_Extract_Financial_Info.git
-   cd Langchain_Extract_Financial_Info
-   ```
-
-2. **Install Dependencies**:
-    ```sh
-    pip install -r requirements.txt
-    ```
-
-3 **Run the Scripts:**:
-    - Generate CIK YAML:
-
-        ```sh
-        python generate_cik_yaml.py
-        ```
-    - Extract Financial Information:
-
-        ```sh
-        python extract_financial_info.py --yaml_path=/Users/peter/Documents/Projects/Langchain_Extract_Financial_Info/output_files/companies_with_cik.yml --output_csv_path=/Users/peter/Documents/Projects/Langchain_Extract_Financial_Info/output_files/financial_data.csv
-        ```
-
-
-### Docker Setup
-1. **Build the Docker Image**:
-        ```sh
-        docker-compose build
-        ```
-
-2. **Run Docker Compose**:
-        ```sh
-        docker-compose build
-        ``` 
-
-3. **Run the Ingestion Script to Save Data to CSV**:
-        ```sh
-        docker-compose run app python extract_financial_info.py --yaml_path=/app/output_files/companies_with_cik.yml --output_csv_path=/app/output_files/financial_data.csv
-        ```
-
-## Configuration
-- **Input File**: `in/companies.csv`
-    - A CSV file containing the names of companies to fetch CIK numbers.
-
-- **Output Files**:
-    - `out/companies_with_cik.yml`: YAML file containing company names and their corresponding CIK numbers.
-    - `out/financial_data.csv`: CSV file containing the extracted financial data.
-
-
-## Scripts:
-   - **generate_cik_yaml.py**:
-    Fetches CIK numbers for companies listed in `in/companies.csv and saves them to output_files/companies_with_cik.yml`.
-
-   - **extract_financial_info.py**:
-    Reads the CIK numbers from `out/companies_with_cik.yml`, fetches the financial data from the SEC EDGAR API, and saves it to `out/financial_data.csv`.
-
-file_path = "/mnt/data/README.md"
-
-with open("/mnt/data/README.md", "w") as file:
-    file.write(readme_content)
-
-file_path
+This project is licensed under the MIT License. See the [LICENSE](notion://www.notion.so/LICENSE.md) file for details.
