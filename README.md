@@ -135,6 +135,7 @@ streamlit run scripts/start.py
 
 ## Project Structure
 
+```
 personal_finance_with_LLM/
 ├── data/
 │
@@ -161,7 +162,7 @@ personal_finance_with_LLM/
 ├── LICENSE
 ├── README.md
 └── requirements.txt
-
+```
 
 ## Environment Variables
 
