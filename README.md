@@ -12,9 +12,9 @@ While this prototype is limited to Form 10-Q and Form-K data of sample companies
 
 ## Table of Contents
 
-- [Langchain Extract Financial Info](#langchain-extract-financial-info)
-  - [Introduction](#introduction)
-  - [Features](#features)
+- [Financial Advisor using LLM](#financial-advisor-using-llm)
+  - [Technology Stack](#technology-stack)
+  - [System Design](#system-design)
   - [Installation](#installation)
   - [MongoDB Setup](#mongodb-setup)
   - [Debugging MongoDB Connection](#debugging-mongodb-connection)
@@ -24,25 +24,30 @@ While this prototype is limited to Form 10-Q and Form-K data of sample companies
   - [Contributing](#contributing)
   - [License](#license)
 
-## Introduction
+## Technology Stack
 
-The Langchain Extract Financial Info project helps users retrieve and analyze financial documents from the SEC Edgar database. It combines modern machine learning techniques and traditional data retrieval methods to provide insightful information on various companies.
+The Financial Advisor application is built using modern AI technology stack from various providers both open source and proprietary technologies. The major components utilized and their functions are outlined below:
 
-## Features
+1. **Open AI GPT-4o Model:** Core Large Language Model (LLM) for natural language tasks such as NLU, NLP and GenAI
+2. **Open AI text-embedding-ada-002 Model:** For generating embeddings for the text data.
+3. **LangChain:** A framework for building LLM based AI applications. Serves as overall orchestrator.
+4. **Mongo DB:** A NoSQL document database for storing unstructured data such as text, html, json and other files. Used for storing Form 10-Q and Form 10-K documents.
+5. **Facebook AI Similarity Search (FAISS):** A vector database store for storing and efficiently searching the vectors generated for documents using Open AI embedding model.
+6. **Streamlit:** A user experience framework for building and sharing AI model and data based applications.
+7. **Python-edgar and SEC Edgar API:** Python-edgar library is used for getting the 10-K and 10-Q documents from SEC EDGAR Datasource API.
 
-- Retrieve financial documents (10-K, 10-Q) from the SEC Edgar database.
-- Store and manage financial data using MongoDB.
-- Utilize FAISS for efficient vector search.
-- Interactive Streamlit interface for querying financial data.
+## System Design
+
+Please see system design documents included in /system_design/ folder.
 
 ## Installation
 
-To get started with the Financial Agent project, follow these steps:
+To get started with the Financial Advisor using LLM applicaation, follow these steps:
 
 1. Clone the repository:
     
     ```
-    git clone [<https://github.com/your-username/financial-agent.git>](https://github.com/peterphan1101/Artificial_Intelligence_Projects)
+    git clone https://github.com/peterphan1101/Artificial_Intelligence_Projects.git
 
     ```
     
@@ -52,11 +57,22 @@ To get started with the Financial Agent project, follow these steps:
     pip install -r requirements.txt
 
     ```
+3. Create a .env file with your API keys/secrets. This project utilizes the following API keys for various functionality requirements. Content of .env should look like the below once API key values are replaced with valid values.
+
+    ```
+    OPENAI_API_KEY = "sk-proj-7**************"
+    SERPAPI_API_KEY = "0******************3"
+    LANGCHAIN_API_KEY = "lsv2_pt_c***************0"
+    LANGCHAIN_TRACING_V2 = "true"
+    MONGO_URI = "mongodb://mongoadmin:YourSecretPasswd@localhost/"
+    HF_API_KEY = "hf_l************************c"
+    HF_HUB_DISABLE_SYMLINKS_WARNING = "True"
     
+    ```
 
 ## MongoDB Setup
 
-To set up MongoDB for this project, follow these instructions:
+To set up MongoDB for this application, follow these instructions:
 
 1. **Install Docker Desktop** (if not already installed):
     - Download and install Docker Desktop from the official Docker website.
@@ -80,7 +96,7 @@ To set up MongoDB for this project, follow these instructions:
     
     ```
     
-5. **Start MongoDB Container**:
+5. **Restarting stopped MongoDB Container**:
     
     ```
     docker start -i llm_mongo
@@ -118,7 +134,7 @@ Try accessing the MongoDB shell to verify credentials:
     ```
     
 4. **Check Network Issues**:
-Ensure there are no network issues preventing access to MongoDB. If you are running the application in a different environment, make sure the MongoDB server is accessible from that environment.
+Ensure there are no network issues preventing access to MongoDB. You may need to open port *27017* for accessing MangoDB. If you are running the application in a different environment, make sure the MongoDB server is accessible from that environment.
 
 
 5. **Review Logs**:
@@ -134,7 +150,7 @@ Verify that the correct ports are mapped. The default port for MongoDB is 27017.
 
 ## Usage
 
-To run the Financial Agent application, execute the following command:
+To run the Financial Advisor application, execute the following command Python environment specific terminal:
 
 ```
 streamlit run scripts/start.py
