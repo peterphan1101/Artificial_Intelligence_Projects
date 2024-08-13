@@ -138,8 +138,7 @@ streamlit run scripts/start.py
 ```
 personal_finance_with_LLM/
 ├── data/
-│
-│
+│   │
 │   ├── APPL_0000320193.pdf
 │   ├── financial_info.csv
 │   ├── sample_companies.yml
