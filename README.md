@@ -61,14 +61,14 @@ To set up MongoDB for this project, follow these instructions:
 3. **Run MongoDB Container**:
     
     ```
-    docker run --restart=unless-stopped --name llm_mongo -p 27017:27017 -v /workspace/mongo:/workspace/mongo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=ORCA1at3orca mongo
+    docker run --restart=unless-stopped --name llm_mongo -p 27017:27017 -v /workspace/mongo:/workspace/mongo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=YourSecretPasswd mongo
 
     ```
     
 4. **Access MongoDB Shell**:
     
     ```
-    docker exec -it llm_mongo mongosh -u mongoadmin -p ORCA1at3orca --authenticationDatabase admin llm_mongo_db
+    docker exec -it llm_mongo mongosh -u mongoadmin -p YourSecretPasswd --authenticationDatabase admin llm_mongo_db
     
     ```
     
@@ -97,7 +97,7 @@ Ensure that the MongoDB service is running. You can check this using Docker comm
 Make sure the `MONGO_URI` in your `.env` file is correct. It should follow this format:
     
     ```
-    MONGO_URI=mongodb://mongoadmin:ORCA1at3orca@localhost:27017/llm_mongo_db
+    MONGO_URI=mongodb://mongoadmin:YourSecretPasswd@localhost:27017/llm_mongo_db
 
     ```
     
@@ -105,7 +105,7 @@ Make sure the `MONGO_URI` in your `.env` file is correct. It should follow this 
 Try accessing the MongoDB shell to verify credentials:
     
     ```
-    docker exec -it llm_mongo mongosh -u mongoadmin -p ORCA1at3orca --authenticationDatabase admin llm_mongo_db
+    docker exec -it llm_mongo mongosh -u mongoadmin -p YourSecretPasswd --authenticationDatabase admin llm_mongo_db
 
     ```
     
@@ -164,7 +164,7 @@ personal_finance_with_LLM/
 Create a `.env` file in the root directory with the following content:
 
 ```
-MONGO_URI="mongodb://mongoadmin:ORCA1at3orca@localhost/" 
+MONGO_URI="mongodb://mongoadmin:YourSecretPasswd@localhost/" 
 OPENAI_API_KEY=your_openai_api_key
 SERPAPI_API_KEY=your_serpapi_api_key
 
