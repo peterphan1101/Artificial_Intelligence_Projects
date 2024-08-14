@@ -37,6 +37,7 @@ The Financial Advisor application is built using modern AI technology stack from
 5. **Facebook AI Similarity Search (FAISS):** A vector database store for storing and efficiently searching the vectors generated for documents using Open AI embedding model.
 6. **Streamlit:** A user experience framework for building and sharing AI model and data based applications.
 7. **Python-edgar and SEC Edgar API:** Python-edgar library is used for getting the 10-K and 10-Q documents from SEC EDGAR Datasource API.
+8. **Ragas and LangSmith:** Frameworks used for evaluating Retrieval Augmented Generation (RAG) pipeline metrics evaluation.
 
 ## System Design
 
@@ -163,30 +164,32 @@ streamlit run start.py
 
 ```
 ARTIFICIAL_INTELLIGENCE_PROJECTS/
-├── Financial Advisor     # Testing files
-│   ├── financial_info.csv
-│   ├── sample_companies.yml
-│   └── output_files/
+├── Financial Advisor/     # Ignore. Manual testing files for concept development
 ├── system_design
 │   ├── lass_diagram_financial_analysis_chatbot.png
 │   ├── finance_analysis_Chart_Version_1.png
 │   ├── financial_analysis_chatbot_design_version_1a.png
 │   └── financial_analysis_chatbot_design_version_1b.png
-├── APPL_0000320193.pdf
-├── debug_start.py
-├── edgar_data_load.py
-├── extract_macroeconomic_data.py
-├── load_companies.py
-├── load_to_vectdb.py
-├── sample_companies.yml
-├── start_agentic.py
-├── start.py
-├── __init__.py
 ├── .env
 ├── .gitignore
+├── APPL_0000320193.pdf
+├── average_rag_metrics_chart.png
+├── debug_start.py
+├── edgar_data_load.py
+├── eval_model.py
+├── eval_resp.py
+├── evauation.csv
+├── extract_macroeconomic_data.py
 ├── LICENSE
+├── llm_evaluation_results_RAG.csv
+├── llm_evaluation_results.csv
+├── load_companies.py
+├── load_to_vectdb.py
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+├── sample_companies.yml
+├── start_agentic.py
+└── start.py
 ```
 
 ## Contributing
