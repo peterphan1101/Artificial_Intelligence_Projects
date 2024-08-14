@@ -191,6 +191,22 @@ ARTIFICIAL_INTELLIGENCE_PROJECTS/
 ├── start_agentic.py
 └── start.py
 ```
+## Evaluations
+
+The agent is evaluated using the [RAGAS](https://docs.ragas.io/en/stable/concepts/metrics/index.html) framework. RAGAS provides a comprehensive set of metrics to assess the effectiveness of RAG. The key metrics used in the evaluation include: 
+- context precision
+- context recall
+- faithfulness
+- answer relevancy
+  
+After running the evaluation, we calculate and chart the average values of these metrics specifically for the OpenAI model. These statistics provide insights into the agent's performance in delivering accurate and relevant responses.
+
+In addition to the RAGAS metrics, we evaluate the response time of the agent both with and without retrieval augmentation. This analysis helps in understanding the trade-offs between the speed and the enhanced accuracy provided by RAG. 
+*This evaluation includes some limitations due to external LLM api calls, which can introduce variability and may not always reflect precise, consistent results.*
+
+## Continued efforts 
+- We worked on adding evaluations using other LLM plugins for our financial advisor agent.
+- We worked on adding web search functionality if a RAG query fails to return data. 
 
 ## Contributing
 
