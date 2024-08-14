@@ -178,7 +178,7 @@ ARTIFICIAL_INTELLIGENCE_PROJECTS/
 ├── edgar_data_load.py
 ├── eval_model.py
 ├── eval_resp.py
-├── evauation.csv
+├── evaluation.csv
 ├── extract_macroeconomic_data.py
 ├── LICENSE
 ├── llm_evaluation_results_RAG.csv
