@@ -15,15 +15,15 @@
 
 ## Overview
 
-Financial Advisor application is a Large Language Model (LLM) based personal financial advising application that leverages the cutting-edge capabilities of LLMs such as Natural Langugage Understanding (NLU), Natural Langugage Processing (NLP) and Generation (GenAI). It digests and understands copious amount of freely available and proprietary financial data to advise on financial status of publicly traded companies and enables users to make informed decisions on personal investing in stocks and other financial instruments. These Retrieval Augmented Generation capabilities combined with search tool enable users to not only get historical data of a given company, but also current financial information such as opening, closing stock prices and market sentiment about company from search results.
+The Financial Advisor application is a Large Language Model (LLM)-based personal financial advising tool that leverages cutting-edge capabilities such as Natural Language Understanding (NLU), Natural Language Processing (NLP), and Generation (GenAI). It digests and understands vast amounts of freely available and proprietary financial data to advise on the financial status of publicly traded companies, enabling users to make informed decisions on personal investing in stocks and other financial instruments.
 
-As part of this limited prototype and demonstration of Large Language Models technical capabilities of NLU, NLP, GenAI, Agentic and RAG capabilities for financial advising, we used Form 10-Q (Quarterly) and Form 10-K (Annual) filings of sample public traded companies such as Apple (APPL), Microsoft (MSFT) and Tesla (TSLA). All publicly traded companies are mandated by United States  Securities and Exchange Comission (SEC) to file Form 10-Qs and Form-10Ks. These forms include wealth of information on the health of the publicly traded companies to allow investors to make informed decisions. A sample Apple (APPL) Form 10-K with file name `APPL_0000320193.pdf` is included in this repository to provide details on various sections of financial information such as revenue, profit, business units, risks and executive compensation etc. that are included in these forms. This information is used by LLMs to provide answers on relevant questions asked by users of this application. 
+These Retrieval Augmented Generation (RAG) capabilities, combined with a search tool, enable users to access not only historical data of a given company but also current financial information such as opening and closing stock prices and market sentiment from search results.
 
-While this prototype is limited to Form 10-Q and Form-K data of sample companies from SEC Edgar data source, this application is not limited to such data. In a production deployment, a dedicated data pipeline can be built to load structured (spreadsheets, JSON, SQL data etc.,) and unstructured data (Text, PDF and Word documents etc.,) into data stores and make them available to LLM for natural language related tasks to generate responses. This prototype is designed to demonstrates the capabilities of LLMs to understand large amounts of financial data and current events (in the form search tool) to provide data-driven advices. 
+As part of this limited prototype demonstrating the technical capabilities of LLMs—including NLU, NLP, GenAI, agentic, and RAG features for financial advising—we used Form 10-Q (Quarterly) and Form 10-K (Annual) filings of sample publicly traded companies such as Apple (AAPL), Microsoft (MSFT), and Tesla (TSLA). All publicly traded companies are mandated by the United States Securities and Exchange Commission (SEC) to file Form 10-Qs and Form 10-Ks. These forms include a wealth of information on the health of publicly traded companies to allow investors to make informed decisions. A sample Apple (AAPL) Form 10-K with the file name AAPL_0000320193.pdf is included in this repository to provide details on various sections of financial information such as revenue, profit, business units, risks, and executive compensation. This information is used by the LLMs to provide answers to relevant questions asked by users of this application.
 
-**Responsible AI Disclaimer:** As with any Artificial Intelligence (AI) generated responses, the AI advices can be incorrect. User of the application should verify the generated responses to make informed investment decisions. Also, note that all investments carry financial risks and can result in loss of money. This is a prototype to demonstrate LLM technical capabilities, use at your own risk.
+While this prototype is limited to Form 10-Q and Form 10-K data of sample companies from the SEC EDGAR data source, the application is not limited to such data. In a production deployment, a dedicated data pipeline can be built to load structured data (spreadsheets, JSON, SQL data, etc.) and unstructured data (text, PDF, Word documents, etc.) into data stores and make them available to the LLM for natural language-related tasks to generate responses. This prototype is designed to demonstrate the capabilities of LLMs to understand large amounts of financial data and current events (in the form of a search tool) to provide data-driven advice.
 
-
+**Responsible AI Disclaimer:** As with any Artificial Intelligence (AI)-generated responses, the AI advice can be incorrect. Users of the application should verify the generated responses to make informed investment decisions. Also, note that all investments carry financial risks and can result in loss of money. This is a prototype to demonstrate LLM technical capabilities; use at your own risk.
 
 
 ## Technology Stack
@@ -36,22 +36,24 @@ The Financial Advisor application is built using modern AI technology stack from
 4. **Mongo DB:** A NoSQL document database for storing unstructured data such as text, html, json and other files. Used for storing Form 10-Q and Form 10-K documents.
 5. **Facebook AI Similarity Search (FAISS):** A vector database store for storing and efficiently searching the vectors generated for documents using Open AI embedding model.
 6. **Streamlit:** A user experience framework for building and sharing AI model and data based applications.
-7. **Python-edgar and SEC Edgar API:** Python-edgar library is used for getting the 10-K and 10-Q documents from SEC EDGAR Datasource API.
-8. **Ragas and LangSmith:** Frameworks used for evaluating Retrieval Augmented Generation (RAG) pipeline metrics evaluation.
+7. **Python-edgar and SEC Edgar API:** Libraries used for retrieving the 10-K and 10-Q documents from the SEC EDGAR data source API.
+8. **Ragas and LangSmith:** Frameworks used for evaluating Retrieval Augmented Generation (RAG) pipeline metrics.
+
 
 ## System Design
 
-Please see system design documents included in /system_design/ folder.
+Please see the system design documents included in the /system_design/ folder.
+
 
 ## Installation
 
 To get started with the Financial Advisor using LLM applicaation, follow these steps:
 
-1. Clone the repository:
+1. Clone the Repository:
     
     ```
     git clone https://github.com/peterphan1101/Artificial_Intelligence_Projects.git
-
+    
     ```
     
 2. Install the required Python packages:
@@ -60,7 +62,8 @@ To get started with the Financial Advisor using LLM applicaation, follow these s
     pip install -r requirements.txt
 
     ```
-3. Create a .env file with your API keys/secrets. This project utilizes the following API keys for various functionality requirements. Content of .env should look like the below once API key values are replaced with valid values.
+3. Create a .env File
+   Create a .env file with your API keys and secrets. This project utilizes the following API keys for various functionalities. The content of the `.env` file should look like the   example below once API key values are replaced with valid values.
 
     ```
     OPENAI_API_KEY = "sk-proj-7**************"
@@ -79,6 +82,7 @@ To set up MongoDB for this application, follow these instructions:
 
 1. **Install Docker Desktop** (if not already installed):
     - Download and install Docker Desktop from the official Docker website.
+      
 2. **Pull MongoDB Docker Image**:
     
     ```
@@ -193,20 +197,21 @@ ARTIFICIAL_INTELLIGENCE_PROJECTS/
 ```
 ## Evaluations
 
-The agent is evaluated using the [RAGAS](https://docs.ragas.io/en/stable/concepts/metrics/index.html) framework. RAGAS provides a comprehensive set of metrics to assess the effectiveness of RAG. The key metrics used in the evaluation include: 
-- context precision
-- context recall
-- faithfulness
-- answer relevancy
+The agent is evaluated using the RAGAS framework [RAGAS](https://docs.ragas.io/en/stable/concepts/metrics/index.html). RAGAS provides a comprehensive set of metrics to assess the effectiveness of RAG. The key metrics used in the evaluation include: 
+- Context Precision
+- Context Recall
+- Faithfulness
+- Answer Relevancy
   
 After running the evaluation, we calculate and chart the average values of these metrics specifically for the OpenAI model. These statistics provide insights into the agent's performance in delivering accurate and relevant responses.
 
-In addition to the RAGAS metrics, we evaluate the response time of the agent both with and without retrieval augmentation. This analysis helps in understanding the trade-offs between the speed and the enhanced accuracy provided by RAG. 
+In addition to the RAGAS metrics, we evaluate the response time of the agent both with and without retrieval augmentation. This analysis helps in understanding the trade-offs between speed and the enhanced accuracy provided by RAG. This evaluation includes some limitations due to external LLM API calls, which can introduce variability and may not always reflect precise, consistent results.
+
 *This evaluation includes some limitations due to external LLM api calls, which can introduce variability and may not always reflect precise, consistent results.*
 
 ## Continued efforts 
-- We worked on adding evaluations using other LLM plugins for our financial advisor agent.
-- We worked on adding web search functionality if a RAG query fails to return data. 
+- Additional Evaluations: We are working on adding evaluations using other LLM plugins for our financial advisor agent.
+- Web Search Functionality: We are implementing web search functionality for cases where a RAG query fails to return data.
 
 ## Contributing
 
