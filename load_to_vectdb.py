@@ -1,3 +1,4 @@
+# TO DO: May need to Archive this file if the load_to_vectdb_multimodals.py works
 import os
 import faiss
 from dotenv import load_dotenv
