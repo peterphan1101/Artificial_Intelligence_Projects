@@ -1,58 +1,77 @@
-import requests
-import pandas as pd
-import yaml
-import time
-from requests.exceptions import ConnectionError, Timeout, RequestException
 import os
-import argparse
+import yaml
+import logging
 from edgar_data_load import get_edgar_filings, upload_to_mongo
 from load_to_vectdb import load_to_vectdb
+from requests.exceptions import ConnectionError, Timeout, RequestException
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def read_sample_companies(file_path):
     """
-    read_sample_companies method takes the path of sample companies yaml file and return a dictionary with company cik and names
-    
+    Reads sample companies from a YAML file.
+
     Parameters:
-    file_path (str): file path to sample companies yaml file.
-    
+    file_path (str): Path to the sample companies YAML file.
+
     Returns:
-    sample_companies (list): list of companies with their cik and name.
-    """     
-    with open(file_path, 'r') as file:
-        sample_companies = yaml.safe_load(file)
-    return sample_companies['companies']
+    list: List of companies with their CIK and name.
+    """
+    try:
+        with open(file_path, 'r') as file:
+            sample_companies = yaml.safe_load(file)
+        return sample_companies['companies']
+    except FileNotFoundError:
+        logging.error(f"File {file_path} not found.")
+        return []
+    except yaml.YAMLError as e:
+        logging.error(f"Error parsing YAML file: {e}")
+        return []
 
 def load_companies_to_mongo(companies, mongo_db):
     """
-    load_companies_to_mongo method gets the filings data from SEC Edgar Api and loads them to MongoDB.
-    
+    Fetches SEC filings for the given companies and uploads them to MongoDB.
+
     Parameters:
-    companies (list): list of companies with cik and name.
-    mongo_db (object): MongoDB client with connection to MongoDB
-    
+    companies (list): List of companies with CIK and name.
+    mongo_db (object): MongoDB client connection object.
+
     Returns:
     None
-    """        
-    for _company in companies:
-        _company_cik = _company['cik']
-        _filings = get_edgar_filings(_company_cik)
-        # print(f"Inside load_companies_to_mongo. Loading _filings : {_filings}")
-        upload_to_mongo(_filings, mongo_db)
+    """
+    for company in companies:
+        company_cik = company['cik']
+        company_name = company['name']
+        try:
+            filings = get_edgar_filings(company_cik)
+            if filings:
+                upload_to_mongo(filings, mongo_db)
+                logging.info(f"Uploaded filings for {company_name} (CIK: {company_cik}) to MongoDB.")
+            else:
+                logging.warning(f"No filings found for {company_name} (CIK: {company_cik}).")
+        except (ConnectionError, Timeout, RequestException) as e:
+            logging.error(f"Failed to fetch filings for {company_name} (CIK: {company_cik}): {e}")
+        except Exception as e:
+            logging.error(f"Unexpected error while processing {company_name} (CIK: {company_cik}): {e}")
 
 def load_companies_to_vectdb(companies, mongo_db, vector_db):
     """
-    load_companies_to_vectdb method gets the data from MongoDB and loads them vector db using the generated embeddings.
-    
+    Loads company data from MongoDB into FAISS vector database using embeddings.
+
     Parameters:
-    companies (list): list of companies with cik and name.
-    mongo_db (object): MongoDB client with connection to MongoDB
-    vector_db (object): FAISS vector DB connection object
-    
+    companies (list): List of companies with CIK and name.
+    mongo_db (object): MongoDB client connection object.
+    vector_db (object): FAISS vector DB connection object.
+
     Returns:
     None
-    """ 
-    # print(f"Inside load_companies_to_vectdb. \n companies : {companies}, \n mongo_db : {mongo_db} \n vector_db : {vector_db}\n")
-    for _company in companies:
-        _company_cik = _company['cik']
-        load_to_vectdb(_company_cik, mongo_db, vector_db)
-
+    """
+    for company in companies:
+        company_cik = company['cik']
+        company_name = company['name']
+        try:
+            load_to_vectdb(company_cik, mongo_db, vector_db)
+            logging.info(f"Company {company_name} (CIK: {company_cik}) loaded into FAISS vector DB.")
+        except Exception as e:
+            logging.error(f"Error loading {company_name} (CIK: {company_cik}) into vector DB: {e}")
